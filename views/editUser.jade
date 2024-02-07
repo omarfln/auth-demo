@@ -1,0 +1,29 @@
+extends layout
+
+block content
+    .container.mt-5
+        h1 Edit User
+        form(method='POST', action='/users/update/' + user.id)
+            .form-group.row
+                label.col-sm-2.col-form-label(for='name') Name
+                .col-sm-10
+                    input.form-control(type='text', name='name', id='name', value=user.name)
+            .form-group.row
+                label.col-sm-2.col-form-label(for='email') Email
+                .col-sm-10
+                    input.form-control(type='email', name='email', id='email', value=user.email)
+            .form-group.row
+                label.col-sm-2.col-form-label(for='uname') Username
+                .col-sm-10
+                    input.form-control(type='text', name='uname', id='uname', value=user.uname)
+            .form-group.row
+                label.col-sm-2.col-form-label(for='contact') Contact
+                .col-sm-10
+                    input.form-control(type='text', name='contact', id='contact', value=user.contact)
+            .form-group
+                label(for='role') Role
+                select.form-control(name='role', id='role')
+                    option(value='user' selected=(user.role === 'user')) User
+                    option(value='admin' selected=(user.role === 'admin')) Admin
+            .text-center
+                button.btn.btn-primary(type='submit') Update User

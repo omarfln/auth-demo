@@ -6,11 +6,89 @@ var User=require('../models/user');
 var passport =require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var nodeMailer=require('nodemailer');
+const bcrypt = require('bcryptjs');
+
 const {check, validationResult} = require('express-validator/check');
+var { requireAuth, requireAdmin } = require('../middleware/authenticationMiddleware');
+
 /* GET users listing. */
+/*
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
+*/
+//////////////////
+//Get all users: Authenticated users only
+
+router.get('/all', requireAuth, async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    const person = req.user || {};
+
+
+    res.render('users', {
+      users: users,
+      person: person
+    });
+  } catch (error) {
+    errors.push({ msg: 'Server error' });
+  }
+});
+var upload = multer({ dest: './uploads' });
+
+//Create user: Admin only
+
+
+
+//Update user: Admin only
+router.get('/edit/:id', requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.render('error', { message: 'User was not found.' });
+    }
+    res.render('editUser', { user: user });
+  } catch (error) {
+    res.render('error', { message: 'Server error: failed to load edit page.' });
+  }
+});
+
+router.post('/update/:id', requireAdmin, async (req, res) => {
+  try {
+    const { name, email, uname, contact, role } = req.body;
+    console.log(req.body)
+    if (!name || !email || !uname || !contact || !role) {
+      res.render('error', { message: 'All fields are required' });
+      return;
+    }
+    const user = await User.findByIdAndUpdate(req.params.id, { name, email, uname, contact, role }, { new: true });
+    if (!user) {
+      res.render('error', { message: 'User not found' });
+      return;
+    }
+    res.redirect('/users/all');
+  } catch (error) {
+    console.log(error);
+    res.render('error', { message: 'Server issue: failed to update user.' });
+    return;
+  }
+});
+
+router.delete('/delete/:id', requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      res.render('error', { message: 'User not found' });
+    }
+    res.send('User deleted successfully.');
+    res.redirect('/users/all');
+  } catch (error) {
+    console.log(error)
+    res.render('error', { message: 'Server issue: unable to delete user' });
+  }
+});
+/////////////////
+
 router.get('/register', function(req, res, next) {
   res.render('register',{title:'Register'});
 });
@@ -21,7 +99,7 @@ router.post('/login',
   passport.authenticate('local',{failureRedirect:'/users/login',failureFlash:'Invalid Credentials'}),
   function(req,res){
     req.flash('success','You are now logged in');
-    res.redirect('/');
+    res.redirect('/users/all');
 });
 
 passport.serializeUser(function(user,done){
@@ -112,8 +190,8 @@ transporter.sendMail(mailOptions,(err,info)=>{
         console.log(`Mail Sent at ${req.body.email}`);
     }
 });
-  res.location('/');
-  res.redirect('./login');
+  //res.location('/');
+  res.redirect('/users/all');
 }
 });
 router.get('/logout',function(req,res){

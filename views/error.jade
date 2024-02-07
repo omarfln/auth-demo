@@ -1,6 +1,11 @@
 extends layout
 
 block content
-  h1= message
-  h2= error.status
-  pre #{error.stack}
+  .container.mt-5
+    h1 Error Page
+    .alert.alert-danger(role='alert')
+      if message
+        | #{message}
+      else
+        | An unexpected error occurred.
+    a.btn.btn-primary(href='/') Home

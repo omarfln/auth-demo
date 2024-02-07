@@ -13,12 +13,18 @@ var flash = require('connect-flash');
 var bcrypt=require('bcryptjs');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
+var methodOverride = require('method-override');
+
 var db=mongoose.connection;
 
-var indexRouter = require('./routes/index');
+var indexRouter = require('./routes');
 var usersRouter = require('./routes/users');
 
 var app = express();
+app.use(methodOverride('_method'));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
